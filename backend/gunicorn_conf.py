@@ -40,6 +40,20 @@ def get_binding_addr() -> str:
     )
 
 
+def get_reload() -> bool:
+    """Determine whether Gunicorn auto-reload should be enabled.
+
+    Returns:
+    - bool: True only when explicitly enabled via environment variable.
+    """
+    return environ.get("GUNICORN_RELOAD", "").strip().lower() in {
+        "1",
+        "true",
+        "yes",
+        "on",
+    }
+
+
 # Actual Gunicorn config variables
 workers: int = calculate_workers()
 worker_tmp_dir: str = mkdtemp(prefix="/dev/shm/")
@@ -50,5 +64,5 @@ graceful_timeout: int = 120
 timeout: int = 120
 keepalive: int = 5
 bind: str = get_binding_addr()
-reload: bool = True
+reload: bool = get_reload()
 default_proc_name: str = "Metagrid"

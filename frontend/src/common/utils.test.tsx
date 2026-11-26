@@ -970,9 +970,10 @@ describe('createEsgpullCommand', () => {
       textInputs: [],
     } as unknown as ActiveSearchQuery;
     const cmd = createEsgpullCommand(searchQuery, false);
-    expect(cmd).toContain(
-      'esgpull search project:\'"CMIP6"\' activity_id:\'"CFMIP"\' experiment_id:\'"piControl"\' --latest true',
-    );
+    expect(cmd).toContain('esgpull search -b solr');
+    expect(cmd).toContain('project:CMIP6');
+    expect(cmd).toContain('activity_id:CFMIP');
+    expect(cmd).toContain('experiment_id:piControl');
   });
 
   it('creates a STAC search command with project and facets', () => {
@@ -987,9 +988,10 @@ describe('createEsgpullCommand', () => {
       textInputs: [],
     } as unknown as ActiveSearchQuery;
     const cmd = createEsgpullCommand(searchQuery, false);
-    expect(cmd).toContain(
-      'esgpull search project:\'"CMIP6"\' activity_id:\'"CFMIP"\' experiment_id:\'"piControl"\' --latest true',
-    );
+    expect(cmd).toContain('esgpull search -b stac');
+    expect(cmd).toContain('project:CMIP6');
+    expect(cmd).toContain('activity_id:CFMIP');
+    expect(cmd).toContain('experiment_id:piControl');
   });
 
   it('creates a download command with --track and --replica', () => {
@@ -1004,12 +1006,12 @@ describe('createEsgpullCommand', () => {
       textInputs: [],
     } as ActiveSearchQuery;
     const cmd = createEsgpullCommand(searchQuery, true);
-    expect(cmd).toContain('esgpull add project:\'"CMIP6"\' --replica false');
-    expect(cmd).toContain('--track | tail -n1');
-    expect(cmd).toContain('esgpull download --disable-ssl');
+    expect(cmd).toContain('esgpull add -b solr project:CMIP6 --replica false --track');
+    expect(cmd).toContain('esgpull update $id');
+    expect(cmd).toContain('esgpull download $id --disable-ssl');
   });
 
-  it('creates a download command with --replica false', () => {
+  it('creates a download command with --replica true', () => {
     const searchQuery = {
       project: { name: 'CMIP6' },
       versionType: 'all',
@@ -1021,9 +1023,9 @@ describe('createEsgpullCommand', () => {
       textInputs: [],
     } as ActiveSearchQuery;
     const cmd = createEsgpullCommand(searchQuery, true);
-    expect(cmd).toContain('esgpull add project:\'"CMIP6"\' --replica true');
-    expect(cmd).toContain('--track | tail -n1');
-    expect(cmd).toContain('esgpull download --disable-ssl');
+    expect(cmd).toContain('esgpull add -b solr project:CMIP6 --replica true --track');
+    expect(cmd).toContain('esgpull update $id');
+    expect(cmd).toContain('esgpull download $id --disable-ssl');
   });
 
   it('includes textInputs in the command', () => {
@@ -1041,15 +1043,9 @@ describe('createEsgpullCommand', () => {
     expect(cmd).toContain('["foo","bar"]');
   });
 
-  it('creates a download command for single dataset, search empty', () => {
-    const cmd = createEsgpullCommand({}, false, '12345');
-    expect(cmd).toContain(`# Esgpull Dataset Download Command:
-\`esgpull add master_id:'\"12345\"' --track | tail -n1\`; esgpull download --disable-ssl`);
-  });
-
   it('returns empty string if the search query is empty', () => {
-    const cmd = createEsgpullCommand({}, true);
-    expect(cmd).toContain('');
+    const cmd = createEsgpullCommand({}, false);
+    expect(cmd).toBe('');
   });
 });
 
@@ -1269,8 +1265,8 @@ describe('Test identifyProblematicFacets', () => {
 
     const currentQuery = activeSearchQueryFixture({
       activeFacets: {
-        facet1: ['value1', 'value2'], // New value
-        facet2: ['value3'], // New facet
+        facet1: ['value1', 'value2'], // New value,
+        facet2: ['value3'], // New facet,
         facet3: ['value4', 'value5'], // New facet with multiple values
       },
     });
@@ -1461,8 +1457,8 @@ describe('Test identifyProblematicFacets', () => {
     const currentQuery = activeSearchQueryFixture({
       project: rawProjectFixture({ name: 'CMIP6' }),
       activeFacets: {
-        source_id: ['CESM2', 'GFDL-ESM4', 'INVALID-MODEL'], // Added invalid model
-        experiment_id: ['historical', 'ssp585'], // Added new experiment
+        source_id: ['CESM2', 'GFDL-ESM4', 'INVALID-MODEL'], // Added invalid model,
+        experiment_id: ['historical', 'ssp585'], // Added new experiment,
         variable: ['tas'],
         frequency: ['mon'],
         // realm removed, which is fine

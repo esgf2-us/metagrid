@@ -152,6 +152,13 @@
 >     __Example Values__
 >
 >     `6aWj3gBYsxUBO++cSXtPzbl4n/sGJdhAmtn70XRoUMA=`
+
+#### `METAGRID_CITATION_ALLOWED_HOSTS`
+
+> !!! example "*Optional*"
+>     __Default:__ `['cera-www.dkrz.de', 'raw.githubusercontent.com', 'cmip7-citations.ceda.ac.uk']`
+>
+>     The list of hostnames allowed for citation URL fetching. Citation URLs must be from one of these hosts for security purposes.
 <!-- end generated backend settings markdown -->
 
 ## Frontend Settings

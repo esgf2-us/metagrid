@@ -11,7 +11,7 @@ import {
   stacSearchResponseFixture,
   activeSearchQueryFixture,
 } from '../../test/mock/fixtures';
-import { rest, server } from '../../test/mock/server';
+import { http, HttpResponse, server } from '../../test/mock/server';
 import apiRoutes from '../../api/routes';
 import { clearStacCaches } from '../../api';
 
@@ -24,8 +24,8 @@ const mockActiveSearchQuery = activeSearchQueryFixture();
 // Helper function to mock STAC search responses
 const mockStacSearchResponse = (stacResults: StacSearchResponse) => {
   server.use(
-    rest.post(apiRoutes.esgfSearchSTAC.path, (_req, res, ctx) =>
-      res(ctx.status(200), ctx.json(stacResults)),
+    http.post(apiRoutes.esgfSearchSTAC.path, ({ request }) =>
+      HttpResponse.json(stacResults, { status: 200 }),
     ),
   );
 };
@@ -252,8 +252,8 @@ describe('DownloadModal component tests', () => {
   it('handles null stacResults gracefully', async () => {
     // Override STAC search to return empty results
     server.use(
-      rest.post(apiRoutes.esgfSearchSTAC.path, (_req, res, ctx) =>
-        res(ctx.status(200), ctx.json({ features: [], links: [], type: 'FeatureCollection' })),
+      http.post(apiRoutes.esgfSearchSTAC.path, ({ request }) =>
+        HttpResponse.json({ features: [], links: [], type: 'FeatureCollection' }, { status: 200 }),
       ),
     );
 
@@ -286,8 +286,8 @@ describe('DownloadModal component tests', () => {
     } as unknown as StacSearchResponse;
     // Override STAC search to return empty results
     server.use(
-      rest.post(apiRoutes.esgfSearchSTAC.path, (_req, res, ctx) =>
-        res(ctx.status(200), ctx.json({ features: [], links: [], type: 'FeatureCollection' })),
+      http.post(apiRoutes.esgfSearchSTAC.path, ({ request }) =>
+        HttpResponse.json({ features: [], links: [], type: 'FeatureCollection' }, { status: 200 }),
       ),
     );
 

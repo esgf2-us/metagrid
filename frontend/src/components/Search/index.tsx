@@ -84,6 +84,7 @@ import {
   stringifyApiRequest,
 } from '../../common/STAC';
 import DownloadModal from '../Downloads/DownloadModal';
+import FacetTag from '../DataDisplay/FacetTag';
 
 const tooltipText = {
   featureNotAvailableInStac: 'This feature is not compatible with STAC projects.',
@@ -165,7 +166,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
 
   const appStyles = getStyle(isDarkMode);
 
-  const { data, error, isLoading, run } = useAsync({
+  const { data, error, isLoading, run, cancel } = useAsync({
     deferFn: fetchSearchResults as unknown as DeferFn<SearchResults>,
   });
   const [filtersExist, setFiltersExist] = React.useState<boolean>(false);
@@ -298,7 +299,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     }
   }, [currentProject.isSTAC, stacLoadedBatches, hasStacResults]);
 
-  // Reset caches when switching projects
+  // Reset caches when switching projects or changing search parameters
   React.useEffect(() => {
     const currentProjectName = (project.name as string) || '';
     const projectActuallyChanged =
@@ -308,10 +309,46 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
       clearAllCaches();
       setPaginationOptions({ page: 1, pageSize: paginationOptions.pageSize });
       setAvailableFacets({});
+    } else if (currentProject.isSTAC && prevProjectNameRef.current === currentProjectName) {
+      // If same project but search parameters changed, clear STAC batches
+      if (
+        stacLoadedBatches.projectName === currentProjectName &&
+        stacLoadedBatches.results.length > 0
+      ) {
+        // Check if search query actually changed
+        const cachedQuery = stacLoadedBatches.searchQuery;
+        if (cachedQuery) {
+          const normalizeQuery = (q: ActiveSearchQuery) => ({
+            activeFacets: q.activeFacets,
+            textInputs: q.textInputs,
+            globusOnly: q.globusOnly,
+            project: { name: q.project.name, pk: q.project.pk },
+          });
+
+          const queryChanged = !isEqual(
+            normalizeQuery(activeSearchQuery),
+            normalizeQuery(cachedQuery),
+          );
+
+          if (queryChanged) {
+            // Query changed - clear STAC batches to force fresh results
+            clearCachedStacBatches();
+            setStacLoadedBatches({ ...EMPTY_STAC_BATCHES, projectName: currentProjectName });
+          }
+        }
+      }
     }
 
     prevProjectNameRef.current = currentProjectName;
-  }, [currentProject.isSTAC, project.name, paginationOptions.pageSize, setAvailableFacets]);
+  }, [
+    currentProject.isSTAC,
+    project.name,
+    paginationOptions.pageSize,
+    setAvailableFacets,
+    activeSearchQuery.activeFacets,
+    activeSearchQuery.textInputs,
+    activeSearchQuery.globusOnly,
+  ]);
 
   React.useEffect(() => {
     if (!objectIsEmpty(project) && project.facetsUrl) {
@@ -329,6 +366,63 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
   React.useEffect(() => {
     setFiltersExist(checkFiltersExist(activeFacets, textInputs));
   }, [activeFacets, textInputs]);
+
+  // Clear STAC batches when ANY search parameter changes
+  // This ensures new search results start fresh on page 1, not appended to old results
+  const previousSearchParamsRef = React.useRef<string>('');
+  React.useEffect(() => {
+    if (!currentProject.isSTAC) {
+      return;
+    }
+
+    // Create a stable string representation of all search parameters
+    const currentSearchParams = JSON.stringify({
+      activeFacets,
+      textInputs,
+      filenameVars,
+      versionType,
+      resultType,
+      minVersionDate,
+      maxVersionDate,
+      minCreatedDate: activeSearchQuery.minCreatedDate,
+      maxCreatedDate: activeSearchQuery.maxCreatedDate,
+      globusOnly: activeSearchQuery.globusOnly,
+      projectName: project.name,
+      projectPk: project.pk,
+    });
+
+    // Check if this is the first run (initialization)
+    if (previousSearchParamsRef.current === '') {
+      previousSearchParamsRef.current = currentSearchParams;
+      return;
+    }
+
+    if (previousSearchParamsRef.current !== currentSearchParams) {
+      cancel(); // Cancel in-flight requests
+      clearCachedStacBatches();
+      setStacLoadedBatches({
+        ...EMPTY_STAC_BATCHES,
+        projectName: (project.name as string) || '',
+      });
+      setCachedResults(undefined);
+      clearCachedSearchResults();
+      previousSearchParamsRef.current = currentSearchParams;
+    }
+  }, [
+    currentProject.isSTAC,
+    activeFacets,
+    textInputs,
+    filenameVars,
+    versionType,
+    resultType,
+    minVersionDate,
+    maxVersionDate,
+    activeSearchQuery.minCreatedDate,
+    activeSearchQuery.maxCreatedDate,
+    activeSearchQuery.globusOnly,
+    project.name,
+    project.pk,
+  ]);
 
   // STAC cache restoration: restore once on navigation, reset on query change
   React.useEffect(() => {
@@ -380,7 +474,6 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     if (!objectIsEmpty(project) && hasFullProject && currentRequestURL) {
       // Capture the current query when making the request
       currentRequestQueryRef.current = activeSearchQuery;
-
       if (currentProject.isSTAC) {
         const cached = getCachedStacBatches();
         const cachedURL = cached?.searchURL || '';
@@ -452,14 +545,12 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
           nextToken = typeof nextLink?.body?.token === 'string' ? nextLink.body.token : undefined;
         }
 
-        // Determine if this is a new search or pagination of existing search
-        // If the search URL changed (filters/facets changed), replace results instead of appending
+        // Determine if we should append (pagination) or replace (new search)
         const isSameSearch =
           stacLoadedBatches.searchURL &&
           currentRequestURL &&
           stacLoadedBatches.searchURL === currentRequestURL;
 
-        // Sanity check: if appending would exceed totalMatched, it's a different query
         const wouldExceedTotal =
           stacLoadedBatches.results.length > 0 &&
           stacLoadedBatches.results.length + newDocs.length > totalMatched;
@@ -469,6 +560,31 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
         const accumulatedResults = shouldAppend
           ? [...stacLoadedBatches.results, ...newDocs]
           : newDocs;
+
+        // Detect stale accumulated results from race conditions
+        const totalMatchedChanged =
+          stacLoadedBatches.totalMatched > 0 && stacLoadedBatches.totalMatched !== totalMatched;
+        const tooManyBatchesForFreshSearch =
+          !shouldAppend && stacLoadedBatches.results.length >= SEARCH_BATCH_SIZE * 2;
+
+        if (totalMatchedChanged || tooManyBatchesForFreshSearch) {
+          // Replace stale results with fresh batch
+          setStacLoadedBatches({
+            results: newDocs,
+            nextToken,
+            projectName: (project.name as string) || '',
+            totalMatched,
+            searchQuery: activeSearchQuery,
+            cacheRestored: true,
+            searchURL: currentRequestURL,
+          });
+          return;
+        }
+
+        // Prevent accumulating more results than the total
+        if (shouldAppend && accumulatedResults.length > totalMatched) {
+          return;
+        }
 
         setStacLoadedBatches({
           results: accumulatedResults,
@@ -651,10 +767,21 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
   const handleEsgpullDownloadCmd = React.useCallback((): void => {
     /* istanbul ignore else -- @preserve */
     if (navigator && navigator.clipboard) {
-      navigator.clipboard.writeText(createEsgpullCommand(activeSearchQuery, true));
-      showNotice(messageApi, 'Esgpull download command copied to clipboard!', {
-        icon: <CodeOutlined />,
-      });
+      const command = createEsgpullCommand(activeSearchQuery, true);
+      if (command) {
+        navigator.clipboard.writeText(command);
+        showNotice(messageApi, 'Esgpull download command copied to clipboard!', {
+          icon: <CodeOutlined />,
+        });
+      } else {
+        showNotice(
+          messageApi,
+          'Unable to generate esgpull command. Please ensure search criteria are set.',
+          {
+            type: 'warning',
+          },
+        );
+      }
     }
   }, [activeSearchQuery, messageApi]);
 
@@ -1114,6 +1241,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
                 activeFacets[facet].map((variable: string) => {
                   const facetKey = `${facet}:${variable}`;
                   const isProblematic = problematicFacets.has(facetKey);
+                  const clickableConfig = currentProject.clickableFacets?.[facet];
                   return (
                     <div key={variable} data-testid={variable}>
                       {isProblematic ? (
@@ -1122,20 +1250,20 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
                           placement="top"
                         >
                           <span>
-                            <Tag
-                              value={[facet, variable]}
-                              onClose={handleRemoveFilter}
-                              type="facet"
+                            <FacetTag
+                              value={variable}
+                              clickableConfig={clickableConfig}
+                              onClose={() => handleRemoveFilter([facet, variable], 'facet')}
                               color="warning"
-                            >
-                              {variable}
-                            </Tag>
+                            />
                           </span>
                         </Tooltip>
                       ) : (
-                        <Tag value={[facet, variable]} onClose={handleRemoveFilter} type="facet">
-                          {variable}
-                        </Tag>
+                        <FacetTag
+                          value={variable}
+                          clickableConfig={clickableConfig}
+                          onClose={() => handleRemoveFilter([facet, variable], 'facet')}
+                        />
                       )}
                     </div>
                   );

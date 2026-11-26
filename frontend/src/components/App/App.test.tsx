@@ -9,7 +9,7 @@ import { fireEvent, within, screen, waitFor } from '@testing-library/react';
 import React from 'react';
 import userEvent from '@testing-library/user-event';
 import { vi } from 'vitest';
-import { rest, server } from '../../test/mock/server';
+import { http, HttpResponse, server } from '../../test/mock/server';
 import apiRoutes from '../../api/routes';
 import { getSearchFromUrl } from '../../common/utils';
 import customRender from '../../test/custom-render';
@@ -522,8 +522,8 @@ describe('User cart', () => {
 describe('Error handling', () => {
   it('displays error message after failing to fetch authenticated user"s cart', async () => {
     server.use(
-      rest.get(apiRoutes.userCart.path, (_req, res, ctx) => res(ctx.status(404))),
-      rest.post(apiRoutes.userCart.path, (_req, res, ctx) => res(ctx.status(404))),
+      http.get(apiRoutes.userCart.path, () => new HttpResponse(null, { status: 404 })),
+      http.post(apiRoutes.userCart.path, () => new HttpResponse(null, { status: 404 })),
     );
 
     customRender(<App searchQuery={activeSearch} />, {
@@ -746,7 +746,9 @@ describe('User search library', () => {
 
   describe('Error handling', () => {
     it('displays error message after failing to fetch authenticated user"s saved search queries', async () => {
-      server.use(rest.get(apiRoutes.userSearches.path, (_req, res, ctx) => res(ctx.status(404))));
+      server.use(
+        http.get(apiRoutes.userSearches.path, () => new HttpResponse(null, { status: 404 })),
+      );
 
       customRender(<App searchQuery={activeSearch} />);
 
@@ -767,7 +769,9 @@ describe('User search library', () => {
         },
       });
 
-      server.use(rest.post(apiRoutes.userSearches.path, (_req, res, ctx) => res(ctx.status(404))));
+      server.use(
+        http.post(apiRoutes.userSearches.path, () => new HttpResponse(null, { status: 404 })),
+      );
 
       // Wait for components to rerender
       await screen.findByTestId('main-query-string-label');
@@ -781,7 +785,9 @@ describe('User search library', () => {
 
     it('displays error message after failing to remove authenticated user"s saved search', async () => {
       // Override API response with 404
-      server.use(rest.delete(apiRoutes.userSearch.path, (_req, res, ctx) => res(ctx.status(404))));
+      server.use(
+        http.delete(apiRoutes.userSearch.path, () => new HttpResponse(null, { status: 404 })),
+      );
 
       customRender(<App searchQuery={activeSearch} />, {
         usesAtoms: true,

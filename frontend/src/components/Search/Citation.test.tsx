@@ -1,6 +1,6 @@
 import { screen } from '@testing-library/react';
 import React from 'react';
-import { rest, server } from '../../test/mock/server';
+import { http, HttpResponse, server } from '../../test/mock/server';
 import apiRoutes from '../../api/routes';
 import Citation, { CitationInfo } from './Citation';
 import customRender from '../../test/custom-render';
@@ -47,7 +47,7 @@ describe('test Citation component', () => {
   it('renders Alert error fetching citation data ', async () => {
     server.use(
       // ESGF Citation API (uses dummy link)
-      rest.post(apiRoutes.citation.path, (_req, res, ctx) => res(ctx.status(404))),
+      http.post(apiRoutes.citation.path, () => new HttpResponse(null, { status: 404 })),
     );
     customRender(<Citation url="citation_a" />);
 

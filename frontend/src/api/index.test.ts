@@ -27,7 +27,12 @@ import {
   startSearchGlobusEndpoints,
   updateUserCart,
 } from '.';
-import { STAC_PROJECTS, generateWgetScriptSTAC, buildStacProjects, setConfiguredAdditionalProjects } from '../common/STAC';
+import {
+  STAC_PROJECTS,
+  generateWgetScriptSTAC,
+  buildStacProjects,
+  setConfiguredAdditionalProjects,
+} from '../common/STAC';
 import { convertResultTypeToReplicaParam, downloadFileForUser } from '../common/utils';
 import { ActiveSearchQuery, Pagination, RawCitation, ResultType } from '../components/Search/types';
 import { mockConfig } from '../test/testFunctions';
@@ -47,7 +52,7 @@ import {
   userSearchQueriesFixture,
   userSearchQueryFixture,
 } from '../test/mock/fixtures';
-import { rest, server } from '../test/mock/server';
+import { http, HttpResponse, server } from '../test/mock/server';
 import apiRoutes, { HTTPCodeType } from './routes';
 
 const genericNetworkErrorMsg = 'Failed to Connect';
@@ -72,13 +77,11 @@ describe('test fetching user authentication with globus', () => {
     expect(userAuth).toEqual(userAuthFixture());
   });
   it('catches and throws error based on HTTP status code', async () => {
-    server.use(rest.get(apiRoutes.globusAuth.path, (_req, res, ctx) => res(ctx.status(404))));
+    server.use(http.get(apiRoutes.globusAuth.path, () => new HttpResponse(null, { status: 404 })));
     await expect(fetchGlobusAuth()).rejects.toThrow(apiRoutes.globusAuth.handleErrorMsg(404));
   });
   it('catches and throws generic network error', async () => {
-    server.use(
-      rest.get(apiRoutes.globusAuth.path, (_req, res) => res.networkError(genericNetworkErrorMsg)),
-    );
+    server.use(http.get(apiRoutes.globusAuth.path, () => HttpResponse.error()));
     await expect(fetchGlobusAuth()).rejects.toThrow(apiRoutes.globusAuth.handleErrorMsg('generic'));
   });
 });
@@ -89,17 +92,15 @@ describe('test fetching user authentication with keycloak', () => {
     expect(userAuth).toEqual(userAuthFixture());
   });
   it('catches and throws error based on HTTP status code', async () => {
-    server.use(rest.post(apiRoutes.keycloakAuth.path, (_req, res, ctx) => res(ctx.status(404))));
+    server.use(
+      http.post(apiRoutes.keycloakAuth.path, () => new HttpResponse(null, { status: 404 })),
+    );
     await expect(fetchUserAuth(['keycloak_token'])).rejects.toThrow(
       apiRoutes.keycloakAuth.handleErrorMsg(404),
     );
   });
   it('catches and throws generic network error', async () => {
-    server.use(
-      rest.post(apiRoutes.keycloakAuth.path, (_req, res) =>
-        res.networkError(genericNetworkErrorMsg),
-      ),
-    );
+    server.use(http.post(apiRoutes.keycloakAuth.path, () => HttpResponse.error()));
     await expect(fetchUserAuth(['keycloak_token'])).rejects.toThrow(
       apiRoutes.keycloakAuth.handleErrorMsg('generic'),
     );
@@ -113,15 +114,13 @@ describe('test fetching user info', () => {
   });
 
   it('returns error', async () => {
-    server.use(rest.get(apiRoutes.userInfo.path, (_req, res, ctx) => res(ctx.status(404))));
+    server.use(http.get(apiRoutes.userInfo.path, () => new HttpResponse(null, { status: 404 })));
     await expect(fetchUserInfo(['access_token'])).rejects.toThrow(
       apiRoutes.userInfo.handleErrorMsg(404),
     );
   });
   it('catches and throws generic network error', async () => {
-    server.use(
-      rest.get(apiRoutes.userInfo.path, (_req, res) => res.networkError(genericNetworkErrorMsg)),
-    );
+    server.use(http.get(apiRoutes.userInfo.path, () => HttpResponse.error()));
     await expect(fetchUserInfo(['access_token'])).rejects.toThrow(
       apiRoutes.userInfo.handleErrorMsg('generic'),
     );
@@ -161,14 +160,12 @@ describe('test fetching projects', () => {
   });
 
   it('catches and throws an error based on HTTP status code', async () => {
-    server.use(rest.get(apiRoutes.projects.path, (_req, res, ctx) => res(ctx.status(404))));
+    server.use(http.get(apiRoutes.projects.path, () => new HttpResponse(null, { status: 404 })));
     await expect(fetchProjects()).rejects.toThrow(apiRoutes.projects.handleErrorMsg(404));
   });
 
   it('catches and throws generic network error', async () => {
-    server.use(
-      rest.get(apiRoutes.projects.path, (_req, res) => res.networkError(genericNetworkErrorMsg)),
-    );
+    server.use(http.get(apiRoutes.projects.path, () => HttpResponse.error()));
     await expect(fetchProjects()).rejects.toThrow(apiRoutes.projects.handleErrorMsg('generic'));
   });
 
@@ -178,8 +175,8 @@ describe('test fetching projects', () => {
 
     // Mock the projects endpoint to return an object without `results`
     server.use(
-      rest.get(apiRoutes.projects.path, (_req, res, ctx) =>
-        res(ctx.status(200), ctx.json({ count: 0 })),
+      http.get(apiRoutes.projects.path, ({ request }) =>
+        HttpResponse.json({ count: 0 }, { status: 200 }),
       ),
     );
 
@@ -225,15 +222,15 @@ describe('test fetching projects', () => {
 
     // Mock backend to include a legacy CMIP6 project
     server.use(
-      rest.get(apiRoutes.projects.path, (_req, res, ctx) =>
-        res(
-          ctx.status(200),
-          ctx.json({
+      http.get(apiRoutes.projects.path, () =>
+        HttpResponse.json(
+          {
             results: [
               ...projectsFixture(),
               { pk: '4', name: 'CMIP6', fullName: 'CMIP6 Legacy', isSTAC: false },
             ],
-          }),
+          },
+          { status: 200 },
         ),
       ),
     );
@@ -402,16 +399,14 @@ describe('test fetching search results', () => {
   });
 
   it('catches and throws generic network error', async () => {
-    server.use(
-      rest.get(apiRoutes.esgfSearch.path, (_req, res) => res.networkError(genericNetworkErrorMsg)),
-    );
+    server.use(http.get(apiRoutes.esgfSearch.path, () => HttpResponse.error()));
     await expect(fetchSearchResults([reqUrl])).rejects.toThrow(
       apiRoutes.esgfSearch.handleErrorMsg('generic'),
     );
   });
 
   it('throws a user-friendly error when status is 422', async () => {
-    server.use(rest.get(apiRoutes.esgfSearch.path, (_req, res, ctx) => res(ctx.status(422))));
+    server.use(http.get(apiRoutes.esgfSearch.path, () => new HttpResponse(null, { status: 422 })));
 
     reqUrl += '?offset=9999&limit=10&latest=true';
     await expect(fetchSearchResults([reqUrl])).rejects.toThrow(
@@ -482,14 +477,12 @@ describe('test fetching citation', () => {
     expect(newCitation).toEqual(results);
   });
   it('catches and throws an error based on HTTP status code', async () => {
-    server.use(rest.post(apiRoutes.citation.path, (_req, res, ctx) => res(ctx.status(404))));
+    server.use(http.post(apiRoutes.citation.path, () => new HttpResponse(null, { status: 404 })));
 
     await expect(fetchDatasetCitation({})).rejects.toThrow(apiRoutes.citation.handleErrorMsg(404));
   });
   it('catches and throws generic network error', async () => {
-    server.use(
-      rest.post(apiRoutes.citation.path, (_req, res) => res.networkError(genericNetworkErrorMsg)),
-    );
+    server.use(http.post(apiRoutes.citation.path, () => HttpResponse.error()));
     await expect(fetchDatasetCitation({})).rejects.toThrow(
       apiRoutes.citation.handleErrorMsg('generic'),
     );
@@ -515,16 +508,14 @@ describe('test fetchFiles()', () => {
     expect(files).toEqual(ESGFSearchAPIFixture());
   });
   it('catches and throws an error based on HTTP status code', async () => {
-    server.use(rest.get(apiRoutes.esgfSearch.path, (_req, res, ctx) => res(ctx.status(404))));
+    server.use(http.get(apiRoutes.esgfSearch.path, () => new HttpResponse(null, { status: 404 })));
     await expect(fetchDatasetFiles([], props)).rejects.toThrow(
       apiRoutes.esgfSearch.handleErrorMsg(404),
     );
   });
 
   it('catches and throws generic network error', async () => {
-    server.use(
-      rest.get(apiRoutes.esgfSearch.path, (_req, res) => res.networkError(genericNetworkErrorMsg)),
-    );
+    server.use(http.get(apiRoutes.esgfSearch.path, () => HttpResponse.error()));
     await expect(fetchDatasetFiles([], props)).rejects.toThrow(
       apiRoutes.esgfSearch.handleErrorMsg('generic'),
     );
@@ -537,15 +528,13 @@ describe('test fetching user cart', () => {
     expect(files).toEqual(rawUserCartFixture());
   });
   it('catches and throws an error based on HTTP status code', async () => {
-    server.use(rest.get(apiRoutes.userCart.path, (_req, res, ctx) => res(ctx.status(404))));
+    server.use(http.get(apiRoutes.userCart.path, () => new HttpResponse(null, { status: 404 })));
     await expect(fetchUserCart('pk', 'access_token')).rejects.toThrow(
       apiRoutes.userCart.handleErrorMsg(404),
     );
   });
   it('catches and throws generic network error', async () => {
-    server.use(
-      rest.get(apiRoutes.userCart.path, (_req, res) => res.networkError(genericNetworkErrorMsg)),
-    );
+    server.use(http.get(apiRoutes.userCart.path, () => HttpResponse.error()));
     await expect(fetchUserCart('pk', 'access_token')).rejects.toThrow(
       apiRoutes.userCart.handleErrorMsg('generic'),
     );
@@ -566,15 +555,13 @@ describe('test updating user cart', () => {
     expect(again).toEqual(rawUserCartFixture());
   });
   it('catches and throws an error based on HTTP status code', async () => {
-    server.use(rest.patch(apiRoutes.userCart.path, (_req, res, ctx) => res(ctx.status(404))));
+    server.use(http.patch(apiRoutes.userCart.path, () => new HttpResponse(null, { status: 404 })));
     await expect(updateUserCart('pk', 'access_token', [])).rejects.toThrow(
       apiRoutes.userCart.handleErrorMsg(404),
     );
   });
   it('catches and throws generic network error', async () => {
-    server.use(
-      rest.patch(apiRoutes.userCart.path, (_req, res) => res.networkError(genericNetworkErrorMsg)),
-    );
+    server.use(http.patch(apiRoutes.userCart.path, () => HttpResponse.error()));
     await expect(updateUserCart('pk', 'access_token', [])).rejects.toThrow(
       apiRoutes.userCart.handleErrorMsg('generic'),
     );
@@ -588,18 +575,16 @@ describe('test fetching user searches', () => {
     expect(res).toEqual({ results: userSearchQueriesFixture() });
   });
   it('catches and throws an error based on HTTP status code', async () => {
-    server.use(rest.get(apiRoutes.userSearches.path, (_req, res, ctx) => res(ctx.status(404))));
+    server.use(
+      http.get(apiRoutes.userSearches.path, () => new HttpResponse(null, { status: 404 })),
+    );
 
     await expect(fetchUserSearchQueries('access_token')).rejects.toThrow(
       apiRoutes.userSearches.handleErrorMsg(404),
     );
   });
   it('catches and throws generic network error', async () => {
-    server.use(
-      rest.get(apiRoutes.userSearches.path, (_req, res) =>
-        res.networkError(genericNetworkErrorMsg),
-      ),
-    );
+    server.use(http.get(apiRoutes.userSearches.path, () => HttpResponse.error()));
     await expect(fetchUserSearchQueries('access_token')).rejects.toThrow(
       apiRoutes.userSearches.handleErrorMsg('generic'),
     );
@@ -614,7 +599,9 @@ describe('test adding user search', () => {
     expect(res).toEqual(payload);
   });
   it('catches and throws an error based on HTTP status code', async () => {
-    server.use(rest.post(apiRoutes.userSearches.path, (_req, res, ctx) => res(ctx.status(404))));
+    server.use(
+      http.post(apiRoutes.userSearches.path, () => new HttpResponse(null, { status: 404 })),
+    );
 
     const payload = userSearchQueryFixture();
     await expect(addUserSearchQuery('pk', 'access_token', payload)).rejects.toThrow(
@@ -623,11 +610,7 @@ describe('test adding user search', () => {
   });
 
   it('catches and throws generic network error', async () => {
-    server.use(
-      rest.post(apiRoutes.userSearches.path, (_req, res) =>
-        res.networkError(genericNetworkErrorMsg),
-      ),
-    );
+    server.use(http.post(apiRoutes.userSearches.path, () => HttpResponse.error()));
 
     const payload = userSearchQueryFixture();
     await expect(addUserSearchQuery('pk', 'access_token', payload)).rejects.toThrow(
@@ -643,18 +626,16 @@ describe('test deleting user search', () => {
     expect(res).toEqual('');
   });
   it('catches and throws an error based on HTTP status code', async () => {
-    server.use(rest.delete(apiRoutes.userSearch.path, (_req, res, ctx) => res(ctx.status(404))));
+    server.use(
+      http.delete(apiRoutes.userSearch.path, () => new HttpResponse(null, { status: 404 })),
+    );
 
     await expect(deleteUserSearchQuery('pk', 'access_token')).rejects.toThrow(
       apiRoutes.userSearch.handleErrorMsg(404),
     );
   });
   it('catches and throws generic network error', async () => {
-    server.use(
-      rest.delete(apiRoutes.userSearch.path, (_req, res) =>
-        res.networkError(genericNetworkErrorMsg),
-      ),
-    );
+    server.use(http.delete(apiRoutes.userSearch.path, () => HttpResponse.error()));
 
     await expect(deleteUserSearchQuery('pk', 'access_token')).rejects.toThrow(
       apiRoutes.userSearch.handleErrorMsg('generic'),
@@ -671,14 +652,12 @@ describe('test fetching wget script', () => {
   });
 
   it('catches and throws an error based on HTTP status code', async () => {
-    server.use(rest.post(apiRoutes.wget.path, (_req, res, ctx) => res(ctx.status(404))));
+    server.use(http.post(apiRoutes.wget.path, () => new HttpResponse(null, { status: 404 })));
 
     await expect(fetchWgetScript(['id'])).rejects.toThrow(apiRoutes.wget.handleErrorMsg(404));
   });
   it('catches and throws generic network error', async () => {
-    server.use(
-      rest.post(apiRoutes.wget.path, (_req, res) => res.networkError(genericNetworkErrorMsg)),
-    );
+    server.use(http.post(apiRoutes.wget.path, () => HttpResponse.error()));
     await expect(fetchWgetScript(['id'])).rejects.toThrow(apiRoutes.wget.handleErrorMsg('generic'));
   });
 });
@@ -734,7 +713,7 @@ describe('test user endpoint search', () => {
   });
   it('throws 404 error', async () => {
     server.use(
-      rest.get(apiRoutes.globusSearchEndpoints.path, (_req, res, ctx) => res(ctx.status(404))),
+      http.get(apiRoutes.globusSearchEndpoints.path, () => new HttpResponse(null, { status: 404 })),
     );
 
     await expect(startSearchGlobusEndpoints('lc public')).rejects.toThrow(
@@ -758,9 +737,7 @@ describe('test fetching node status', () => {
   });
 
   it('catches and throws generic network error', async () => {
-    server.use(
-      rest.get(apiRoutes.nodeStatus.path, (_req, res) => res.networkError(genericNetworkErrorMsg)),
-    );
+    server.use(http.get(apiRoutes.nodeStatus.path, () => HttpResponse.error()));
 
     await expect(fetchNodeStatus()).rejects.toThrow(apiRoutes.nodeStatus.handleErrorMsg('generic'));
   });
@@ -809,11 +786,15 @@ describe('testing session storage', () => {
     expect(loadRes).toEqual(null);
   });
   it('Testing a bad response is received for load', () => {
-    server.use(rest.post(apiRoutes.tempStorageGet.path, (_req, res, ctx) => res(ctx.status(400))));
+    server.use(
+      http.post(apiRoutes.tempStorageGet.path, () => new HttpResponse(null, { status: 400 })),
+    );
     expect(loadSessionValue('test')).rejects.toThrow(apiRoutes.tempStorageGet.handleErrorMsg(400));
   });
   it('Testing a bad response is received for save', () => {
-    server.use(rest.post(apiRoutes.tempStorageSet.path, (_req, res, ctx) => res(ctx.status(400))));
+    server.use(
+      http.post(apiRoutes.tempStorageSet.path, () => new HttpResponse(null, { status: 400 })),
+    );
     expect(saveSessionValue('test', 'value')).rejects.toThrow(
       apiRoutes.tempStorageSet.handleErrorMsg(400),
     );
@@ -1023,18 +1004,16 @@ describe('test fetching temp storage get', () => {
   });
 
   it('catches and throws an error based on HTTP status code', async () => {
-    server.use(rest.post(apiRoutes.tempStorageGet.path, (_req, res, ctx) => res(ctx.status(404))));
+    server.use(
+      http.post(apiRoutes.tempStorageGet.path, () => new HttpResponse(null, { status: 404 })),
+    );
     await expect(loadSessionValue('testKey')).rejects.toThrow(
       apiRoutes.tempStorageGet.handleErrorMsg(404),
     );
   });
 
   it('catches and throws generic network error', async () => {
-    server.use(
-      rest.post(apiRoutes.tempStorageGet.path, (_req, res) =>
-        res.networkError(genericNetworkErrorMsg),
-      ),
-    );
+    server.use(http.post(apiRoutes.tempStorageGet.path, () => HttpResponse.error()));
     await expect(loadSessionValue('testKey')).rejects.toThrow(
       apiRoutes.tempStorageGet.handleErrorMsg('generic'),
     );
@@ -1048,18 +1027,16 @@ describe('test fetching temp storage set', () => {
   });
 
   it('catches and throws an error based on HTTP status code', async () => {
-    server.use(rest.post(apiRoutes.tempStorageSet.path, (_req, res, ctx) => res(ctx.status(404))));
+    server.use(
+      http.post(apiRoutes.tempStorageSet.path, () => new HttpResponse(null, { status: 404 })),
+    );
     await expect(saveSessionValue('testKey', 'testValue')).rejects.toThrow(
       apiRoutes.tempStorageSet.handleErrorMsg(404),
     );
   });
 
   it('catches and throws generic network error', async () => {
-    server.use(
-      rest.post(apiRoutes.tempStorageSet.path, (_req, res) =>
-        res.networkError(genericNetworkErrorMsg),
-      ),
-    );
+    server.use(http.post(apiRoutes.tempStorageSet.path, () => HttpResponse.error()));
     await expect(saveSessionValue('testKey', 'testValue')).rejects.toThrow(
       apiRoutes.tempStorageSet.handleErrorMsg('generic'),
     );
@@ -1073,11 +1050,7 @@ describe('resetGlobusTokens', () => {
   });
 
   it('throws an error when request fails', async () => {
-    server.use(
-      rest.get(apiRoutes.globusResetTokens.path, (_req, res) =>
-        res.networkError(genericNetworkErrorMsg),
-      ),
-    );
+    server.use(http.get(apiRoutes.globusResetTokens.path, () => HttpResponse.error()));
     await expect(resetGlobusTokens()).rejects.toThrow();
   });
 });
@@ -1087,18 +1060,21 @@ describe('STAC API functions', () => {
     clearAllMemoizationCaches();
 
     // Set up a test project with facets for STAC tests
-    const testProjects = buildStacProjects([
-      {
-        name: 'CMIP6 Test',
-        projectName: 'CMIP6',
-        fullName: 'Test CMIP6 Project',
-        projectUrl: 'https://example.com',
-        facetsByGroup: {
-          General: ['activity_id'],
-          Identifiers: ['source_id', 'experiment_id'],
+    const testProjects = buildStacProjects(
+      [
+        {
+          name: 'CMIP6 Test',
+          projectName: 'CMIP6',
+          fullName: 'Test CMIP6 Project',
+          projectUrl: 'https://example.com',
+          facetsByGroup: {
+            General: ['activity_id'],
+            Identifiers: ['source_id', 'experiment_id'],
+          },
         },
-      },
-    ], 1);
+      ],
+      1,
+    );
     setConfiguredAdditionalProjects(testProjects);
   });
 
@@ -1118,16 +1094,16 @@ describe('STAC API functions', () => {
     };
 
     let capturedAggBody: unknown = null;
-    let capturedSearchBody: { collections: string[]; filter?: unknown } | null = null;
+    let capturedSearchBody: { collections: string[]; filter?: unknown } | null | undefined = null;
 
     server.use(
-      rest.post(apiRoutes.esgfAggregationsSTAC.path, async (req, res, ctx) => {
+      http.post(apiRoutes.esgfAggregationsSTAC.path, async ({ request: req }) => {
         capturedAggBody = await req.json();
-        return res(ctx.status(200), ctx.json(aggregationsResp));
+        return HttpResponse.json(aggregationsResp, { status: 200 });
       }),
-      rest.post(apiRoutes.esgfSearchSTAC.path, async (req, res, ctx) => {
-        capturedSearchBody = await req.json();
-        return res(ctx.status(200), ctx.json(stacSearchResp));
+      http.post(apiRoutes.esgfSearchSTAC.path, async ({ request: req }) => {
+        capturedSearchBody = (await req.json()) as { collections: string[]; filter?: unknown };
+        return HttpResponse.json(stacSearchResp, { status: 200 });
       }),
     );
 
@@ -1152,9 +1128,9 @@ describe('STAC API functions', () => {
   it('returns stac result with empty facets when aggregations endpoint errors (status set accordingly)', async () => {
     // make aggregations endpoint return 500, search returns an empty feature collection
     server.use(
-      rest.post(apiRoutes.esgfAggregationsSTAC.path, (_req, res, ctx) => res(ctx.status(500))),
-      rest.post(apiRoutes.esgfSearchSTAC.path, (_req, res, ctx) =>
-        res(ctx.status(200), ctx.json({ type: 'FeatureCollection', features: [] })),
+      http.post(apiRoutes.esgfAggregationsSTAC.path, () => new HttpResponse(null, { status: 500 })),
+      http.post(apiRoutes.esgfSearchSTAC.path, () =>
+        HttpResponse.json({ type: 'FeatureCollection', features: [] }, { status: 200 }),
       ),
     );
 
@@ -1170,7 +1146,7 @@ describe('STAC API functions', () => {
 
   it('throws error when STAC aggregations fails', async () => {
     server.use(
-      rest.post(apiRoutes.esgfAggregationsSTAC.path, (_req, res, ctx) => res(ctx.status(500))),
+      http.post(apiRoutes.esgfAggregationsSTAC.path, () => new HttpResponse(null, { status: 500 })),
     );
 
     await expect(fetchSTACAggregations('CMIP6', 'test-url', undefined)).rejects.toThrow(
@@ -1179,7 +1155,9 @@ describe('STAC API functions', () => {
   });
 
   it('throws error when STAC search fails', async () => {
-    server.use(rest.post(apiRoutes.esgfSearchSTAC.path, (_req, res, ctx) => res(ctx.status(500))));
+    server.use(
+      http.post(apiRoutes.esgfSearchSTAC.path, () => new HttpResponse(null, { status: 500 })),
+    );
 
     await expect(postSTACSearch('CMIP6', 10, undefined, undefined, undefined)).rejects.toThrow(
       apiRoutes.esgfSearchSTAC.handleErrorMsg('generic' as HTTPCodeType),
@@ -1187,7 +1165,9 @@ describe('STAC API functions', () => {
   });
 
   it('throws error when STAC search endpoint fails', async () => {
-    server.use(rest.post(apiRoutes.esgfSearchSTAC.path, (_req, res, ctx) => res(ctx.status(500))));
+    server.use(
+      http.post(apiRoutes.esgfSearchSTAC.path, () => new HttpResponse(null, { status: 500 })),
+    );
 
     const reqUrl = `${apiRoutes.esgfSearchSTAC.path}?project_id=CMIP6`;
     await expect(fetchSearchResults({ reqUrl })).rejects.toThrow(

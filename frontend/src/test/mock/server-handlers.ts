@@ -4,7 +4,7 @@
  * The handlers can be overwritten in a test to mock behaviors such as a failed
  * HTTP response from an API (404).
  */
-import { rest } from 'msw';
+import { http, HttpResponse } from 'msw';
 import apiRoutes from '../../api/routes';
 import {
   ESGFSearchAPIFixture,
@@ -24,31 +24,29 @@ import {
 import { tempStorageGetMock, tempStorageSetMock } from './mockStorage';
 
 const handlers = [
-  rest.post(apiRoutes.keycloakAuth.path, async (_req, res, ctx) =>
-    res(ctx.status(200), ctx.json(userAuthFixture())),
+  http.post(apiRoutes.keycloakAuth.path, async () =>
+    HttpResponse.json(userAuthFixture(), { status: 200 }),
   ),
-  rest.get(apiRoutes.globusAuth.path, async (_req, res, ctx) =>
-    res(ctx.status(200), ctx.json(userAuthFixture())),
+  http.get(apiRoutes.globusAuth.path, async () =>
+    HttpResponse.json(userAuthFixture(), { status: 200 }),
   ),
-  rest.get(apiRoutes.globusResetTokens.path, async (_req, res, ctx) =>
-    res(ctx.status(200), ctx.json({ status: 'success', message: 'Tokens reset successfully.' })),
+  http.get(apiRoutes.globusResetTokens.path, async () =>
+    HttpResponse.json({ status: 'success', message: 'Tokens reset successfully.' }, { status: 200 }),
   ),
-  rest.get(apiRoutes.globusSearchEndpoints.path, async (_req, res, ctx) => {
+  http.get(apiRoutes.globusSearchEndpoints.path, async ({ request }) => {
     // For testing multiple search results
-    const data = new URLSearchParams(_req.url.search);
-
-    const searchText = data.get('search_text')?.toLowerCase();
+    const url = new URL(request.url);
+    const searchText = url.searchParams.get('search_text')?.toLowerCase();
 
     // Depending on search text, give back results
     switch (searchText) {
       case null:
-        return res(ctx.status(200), ctx.json([]));
+        return HttpResponse.json([], { status: 200 });
       case 'lc public':
-        return res(ctx.status(200), ctx.json([globusEndpointFixture()]));
+        return HttpResponse.json([globusEndpointFixture()], { status: 200 });
       case 'multiple endpoints':
-        return res(
-          ctx.status(200),
-          ctx.json([
+        return HttpResponse.json(
+          [
             globusEndpointFixture({
               canonical_name: 'endpoint1',
               display_name: 'Endpoint 1',
@@ -74,136 +72,133 @@ const handlers = [
               owner_id: 'ownerId123',
               subscription_id: '',
             }),
-          ]),
+          ],
+          { status: 200 },
         );
       case 'error404':
-        return res(ctx.status(404), ctx.json({ error: 'search error.' }));
+        return HttpResponse.json({ error: 'search error.' }, { status: 404 });
       default:
-        return res(ctx.status(200), ctx.json([]));
+        return HttpResponse.json([], { status: 200 });
     }
   }),
-  rest.post(apiRoutes.globusTransfer.path, async (_req, res, ctx) =>
-    res(ctx.status(200), ctx.json(globusTransferResponseFixture())),
+  http.post(apiRoutes.globusTransfer.path, async () =>
+    HttpResponse.json(globusTransferResponseFixture(), { status: 200 }),
   ),
-  rest.get(apiRoutes.userInfo.path, async (_req, res, ctx) =>
-    res(ctx.status(200), ctx.json(userInfoFixture())),
+  http.get(apiRoutes.userInfo.path, async () =>
+    HttpResponse.json(userInfoFixture(), { status: 200 }),
   ),
-  rest.post(apiRoutes.tempStorageGet.path, async (_req, res, ctx) => {
-    const data = _req.body as { dataKey: string; dataValue: unknown };
+  http.post(apiRoutes.tempStorageGet.path, async ({ request }) => {
+    const data = (await request.json()) as { dataKey: string; dataValue: unknown };
     if (data && data.dataKey) {
       const keyName = data.dataKey;
 
       const value: unknown = tempStorageGetMock(keyName);
-      return res(ctx.status(200), ctx.json({ [keyName]: value }));
+      return HttpResponse.json({ [keyName]: value }, { status: 200 });
     }
-    return res(ctx.status(400), ctx.json('Load failed!'));
+    return HttpResponse.json('Load failed!', { status: 400 });
   }),
-  rest.post(apiRoutes.tempStorageSet.path, async (_req, res, ctx) => {
-    const reqBody = _req.body as string;
+  http.post(apiRoutes.tempStorageSet.path, async ({ request }) => {
+    const reqBody = await request.text();
     const data = JSON.parse(reqBody) as { dataKey: string; dataValue: unknown };
     if (data && data.dataKey && data.dataValue) {
       const keyName = data.dataKey;
 
       tempStorageSetMock(keyName, data.dataValue as string);
-      return res(ctx.status(200), ctx.json({ data: 'Save success!' }));
+      return HttpResponse.json({ data: 'Save success!' }, { status: 200 });
     }
-    return res(ctx.status(400), ctx.json({ data: 'Save failed!' }));
+    return HttpResponse.json({ data: 'Save failed!' }, { status: 400 });
   }),
-  rest.get(apiRoutes.userInfo.path, async (_req, res, ctx) =>
-    res(ctx.status(200), ctx.json(userInfoFixture())),
+  http.get(apiRoutes.userInfo.path, async () =>
+    HttpResponse.json(userInfoFixture(), { status: 200 }),
   ),
-  rest.get(apiRoutes.userCart.path, async (_req, res, ctx) =>
-    res(ctx.status(200), ctx.json(rawUserCartFixture())),
+  http.get(apiRoutes.userCart.path, async () =>
+    HttpResponse.json(rawUserCartFixture(), { status: 200 }),
   ),
-  rest.patch(apiRoutes.userCart.path, async (_req, res, ctx) =>
-    res(ctx.status(200), ctx.json(rawUserCartFixture())),
+  http.patch(apiRoutes.userCart.path, async () =>
+    HttpResponse.json(rawUserCartFixture(), { status: 200 }),
   ),
-  rest.get(apiRoutes.userSearches.path, async (_req, res, ctx) =>
-    res(ctx.status(200), ctx.json({ results: userSearchQueriesFixture() })),
+  http.get(apiRoutes.userSearches.path, async () =>
+    HttpResponse.json({ results: userSearchQueriesFixture() }, { status: 200 }),
   ),
-  rest.post(apiRoutes.userSearches.path, async (_req, res, ctx) =>
-    res(ctx.status(201), ctx.json(userSearchQueryFixture())),
+  http.post(apiRoutes.userSearches.path, async () =>
+    HttpResponse.json(userSearchQueryFixture(), { status: 201 }),
   ),
-  rest.delete(apiRoutes.userSearch.path, async (_req, res, ctx) => res(ctx.status(204))),
-  rest.get(apiRoutes.projects.path, async (_req, res, ctx) =>
-    res(ctx.status(200), ctx.json({ results: projectsFixture() })),
+  http.delete(apiRoutes.userSearch.path, async () => new HttpResponse(null, { status: 204 })),
+  http.get(apiRoutes.projects.path, async () =>
+    HttpResponse.json({ results: projectsFixture() }, { status: 200 }),
   ),
-  rest.get(apiRoutes.esgfSearch.path, async (_req, res, ctx) =>
-    res(ctx.status(200), ctx.json(ESGFSearchAPIFixture())),
+  http.get(apiRoutes.esgfSearch.path, async () =>
+    HttpResponse.json(ESGFSearchAPIFixture(), { status: 200 }),
   ),
-  rest.post(apiRoutes.citation.path, async (_req, res, ctx) => {
+  http.post(apiRoutes.citation.path, async ({ request }) => {
     // For testing more than one set of creators
-    const data = _req.body as { [key: string]: unknown };
+    const data = (await request.json()) as { [key: string]: unknown };
     if (data && data.citurl) {
       const citationUrl = data.citurl;
       if (citationUrl === 'citation_a') {
-        return res(
-          ctx.status(200),
-          ctx.json(
-            rawCitationFixture({
-              creators: [
-                { creatorName: 'Bobby' },
-                { creatorName: 'Tommy' },
-                { creatorName: 'Joey' },
-              ],
-            }),
-          ),
+        return HttpResponse.json(
+          rawCitationFixture({
+            creators: [
+              { creatorName: 'Bobby' },
+              { creatorName: 'Tommy' },
+              { creatorName: 'Joey' },
+            ],
+          }),
+          { status: 200 },
         );
       }
       /* istanbul ignore next -- @preserve */
       if (citationUrl === 'citation_b') {
-        return res(
-          ctx.status(200),
-          ctx.json(
-            rawCitationFixture({
-              creators: [
-                { creatorName: 'Bobby' },
-                { creatorName: 'Tommy' },
-                { creatorName: 'Timmy' },
-                { creatorName: 'Joey' },
-              ],
-            }),
-          ),
+        return HttpResponse.json(
+          rawCitationFixture({
+            creators: [
+              { creatorName: 'Bobby' },
+              { creatorName: 'Tommy' },
+              { creatorName: 'Timmy' },
+              { creatorName: 'Joey' },
+            ],
+          }),
+          { status: 200 },
         );
       }
     }
 
-    return res(ctx.status(200), ctx.json(rawCitationFixture()));
+    return HttpResponse.json(rawCitationFixture(), { status: 200 });
   }),
-  rest.post(apiRoutes.wget.path, async (_req, res, ctx) => res(ctx.status(200))),
-  rest.get(apiRoutes.nodeStatus.path, async (_req, res, ctx) =>
-    res(ctx.status(200), ctx.json(rawNodeStatusFixture())),
+  http.post(apiRoutes.wget.path, async () => new HttpResponse(null, { status: 200 })),
+  http.get(apiRoutes.nodeStatus.path, async () =>
+    HttpResponse.json(rawNodeStatusFixture(), { status: 200 }),
   ),
-  rest.get(apiRoutes.introMarkdown.path, async (_req, res, ctx) =>
-    res(ctx.status(200), ctx.body('Some Markdown')),
+  http.get(apiRoutes.introMarkdown.path, async () =>
+    HttpResponse.text('Some Markdown', { status: 200 }),
   ),
-  rest.get(apiRoutes.esgfSearchSTAC.path, async (_req, res, ctx) => {
-    return res(ctx.status(200), ctx.json(stacSearchResultsFixture()));
+  http.get(apiRoutes.esgfSearchSTAC.path, async () => {
+    return HttpResponse.json(stacSearchResultsFixture(), { status: 200 });
   }),
-  rest.post(apiRoutes.esgfSearchSTAC.path, async (_req, res, ctx) => {
-    return res(ctx.status(200), ctx.json(stacSearchResultsFixture().search));
+  http.post(apiRoutes.esgfSearchSTAC.path, async () => {
+    return HttpResponse.json(stacSearchResultsFixture().search, { status: 200 });
   }),
-  rest.get(apiRoutes.esgfAggregationsSTAC.path, async (_req, res, ctx) => {
-    return res(ctx.status(200), ctx.json(stacAggregationsFixture()));
+  http.get(apiRoutes.esgfAggregationsSTAC.path, async () => {
+    return HttpResponse.json(stacAggregationsFixture(), { status: 200 });
   }),
-  rest.post(apiRoutes.esgfAggregationsSTAC.path, async (_req, res, ctx) => {
-    return res(ctx.status(200), ctx.json(stacAggregationsFixture()));
+  http.post(apiRoutes.esgfAggregationsSTAC.path, async () => {
+    return HttpResponse.json(stacAggregationsFixture(), { status: 200 });
   }),
-  rest.get('/projects/projects.json', async (_req, res, ctx) => {
+  http.get('/projects/projects.json', async () => {
     // Return a valid empty config (tests will use default projects)
-    return res(
-      ctx.status(200),
-      ctx.json({
+    return HttpResponse.json(
+      {
         additionalProjects: [],
         whitelist: [],
         blacklist: [],
-      }),
+      },
+      { status: 200 },
     );
   }),
   // Default fallback handler
-  rest.get('*', async (req, res, ctx) => {
+  http.get('*', async () => {
     // console.error(`Please add request handler for ${req.url.toString()}`);
-    return res(ctx.status(500), ctx.json({ error: 'You must add request handler.' }));
+    return HttpResponse.json({ error: 'You must add request handler.' }, { status: 500 });
   }),
 ];
 

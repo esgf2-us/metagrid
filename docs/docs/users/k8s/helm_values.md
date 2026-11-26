@@ -1,6 +1,14 @@
 # Metagrid settings
 The `config:` section of `values.yaml` will be passed through Helm's `tpl` function and the result will be stored in a Kubernetes Secret and mounted as environment variables in the Django backend pod. See [Configurable Environment Variables](../configurable_environment_variables.md) for available environment variables.
 
+Gunicorn auto-reload is disabled by default for production use. If you need to opt into reload behavior for development-oriented environments, you can pass it through the backend config values:
+
+```yaml
+django:
+  config:
+    GUNICORN_RELOAD: "true"
+```
+
 # Configuring Postgres
 This chart includes the [Bitnami Postgres-ha chart](https://github.com/bitnami/charts/tree/main/bitnami/postgresql-ha) as a dependency by default. You can customize this instance using the `postgres:` key in values.yaml.
 

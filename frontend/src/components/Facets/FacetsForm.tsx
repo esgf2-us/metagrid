@@ -42,6 +42,7 @@ import {
 } from '../../common/atoms';
 import { leftSidebarTargets } from '../../common/joyrideTutorials/reactJoyrideSteps';
 import { getAggregationsList, stringifyApiRequest } from '../../common/STAC';
+import FacetTag from '../DataDisplay/FacetTag';
 
 dayjs.extend(customParseFormat);
 dayjs.extend(advancedFormat);
@@ -124,6 +125,7 @@ export const generateStacFacetOptions = (
 export const generateFacetOptions = (
   facet: string,
   facetOptions: [string, number][] | string[],
+  clickableFacetConfig?: { urlTemplate: string },
 ): { key: string; value: string; label: JSX.Element }[] => {
   /* istanbul ignore next -- @preserve */
   if (facetOptions.length > 0 && typeof facetOptions[0] === 'string') {
@@ -162,14 +164,41 @@ export const generateFacetOptions = (
         );
       }
 
-      // The data node facet has a unique tooltip overlay to show the status of the highlighted node
-      if (facet === 'data_node') {
+      // Add clickable link for configured facets (must come before data_node check)
+      if (clickableFacetConfig) {
+        const url = clickableFacetConfig.urlTemplate.replace('{value}', variable[0].toLowerCase());
+        const linkStyle: React.CSSProperties = {
+          color: '#1890ff',
+          textDecoration: 'none',
+          cursor: 'pointer',
+          transition: 'color 0.3s ease',
+        };
+
+        optionOutput = (
+          <>
+            <Tooltip title={`View ${variable[0]} documentation`}>
+              <a
+                href={url}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={linkStyle}
+                onClick={(e) => e.stopPropagation()}
+              >
+                {variable[0]}
+              </a>
+            </Tooltip>
+            <span style={styles.facetCount}>({variable[1]})</span>
+          </>
+        );
+      } else if (facet === 'data_node') {
+        // The data node facet has a unique tooltip overlay to show the status of the highlighted node
         optionOutput = (
           <StatusToolTip dataNode={variable[0]}>
             <span style={styles.facetCount}>({variable[1]})</span>
           </StatusToolTip>
         );
       }
+
       return {
         key: variable[0],
         value: variable[0],
@@ -457,6 +486,43 @@ const FacetsForm: React.FC = () => {
     }, 0); // Initialize maxLength to 0
   }
 
+  /**
+   * Renders a custom tag for selected facet values with clickable links if configured
+   */
+  const renderClickableTag = (facet: string) => {
+    return (props: {
+      value: string;
+      closable: boolean;
+      onClose: () => void;
+    }): React.ReactElement => {
+      const { value, closable, onClose } = props;
+      const clickableConfig = currentProject.clickableFacets?.[facet];
+
+      const onPreventMouseDown = (event: React.MouseEvent<HTMLSpanElement>) => {
+        event.preventDefault();
+        event.stopPropagation();
+      };
+
+      // Find the count for this value from availableFacets
+      const facetOptions = availableFacets[facet] || [];
+      const matchingOption = facetOptions.find(
+        (option) => Array.isArray(option) && option[0] === value,
+      );
+      const count = matchingOption ? matchingOption[1] : null;
+
+      return (
+        <FacetTag
+          value={value}
+          clickableConfig={clickableConfig}
+          closable={closable}
+          onClose={onClose}
+          onMouseDown={onPreventMouseDown}
+          count={count}
+        />
+      );
+    };
+  };
+
   const generateFacetGroups = useMemo((): {
     key: string;
     label: JSX.Element;
@@ -565,7 +631,12 @@ const FacetsForm: React.FC = () => {
                   onChange={(value: string[] | []) => {
                     handleOnSelectAvailableFacetsForm(facet, value);
                   }}
-                  options={generateFacetOptions(facet, facetOptions)}
+                  tagRender={renderClickableTag(facet)}
+                  options={generateFacetOptions(
+                    facet,
+                    facetOptions,
+                    currentProject.clickableFacets?.[facet],
+                  )}
                 />
               </Form.Item>
             );

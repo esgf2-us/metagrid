@@ -14,7 +14,10 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from config.settings.site_specific import MetagridFrontendSettings
+from config.settings.site_specific import (
+    MetagridBackendSettings,
+    MetagridFrontendSettings,
+)
 from metagrid.wget.views import do_wget_integrated
 
 
@@ -160,10 +163,11 @@ def do_citation(request):
     url = jo["citurl"]
     parsed_url = urlparse(url)
 
-    if not (
-        parsed_url.hostname
-        in ["cera-www.dkrz.de", "raw.githubusercontent.com"]
-    ):
+    # Get allowed hosts from configuration
+    backend_settings = MetagridBackendSettings()
+    allowed_hosts = backend_settings.CITATION_ALLOWED_HOSTS
+
+    if not (parsed_url.hostname in allowed_hosts):
         print(f"ERROR hostname {parsed_url.hostname} not in whitelist")
         return HttpResponseBadRequest()
 
