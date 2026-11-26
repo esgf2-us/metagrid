@@ -13,7 +13,6 @@ import {
   Radio,
   Row,
   Select,
-  Tag,
   Tooltip,
   RadioChangeEvent,
   message,
@@ -43,6 +42,7 @@ import {
 } from '../../common/atoms';
 import { leftSidebarTargets } from '../../common/joyrideTutorials/reactJoyrideSteps';
 import { getAggregationsList, stringifyApiRequest } from '../../common/STAC';
+import FacetTag from '../DataDisplay/FacetTag';
 
 dayjs.extend(customParseFormat);
 dayjs.extend(advancedFormat);
@@ -510,45 +510,15 @@ const FacetsForm: React.FC = () => {
       );
       const count = matchingOption ? matchingOption[1] : null;
 
-      if (clickableConfig) {
-        const url = clickableConfig.urlTemplate.replace('{value}', String(value).toLowerCase());
-        return (
-          <Tag
-            onMouseDown={onPreventMouseDown}
-            closable={closable}
-            onClose={onClose}
-            style={{ marginRight: 3 }}
-          >
-            <Tooltip title={`View ${value} documentation`}>
-              <a
-                href={url}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  color: '#1890ff',
-                  textDecoration: 'none',
-                  cursor: 'pointer',
-                }}
-                onClick={(e) => e.stopPropagation()}
-              >
-                {value}
-              </a>
-            </Tooltip>
-            {count !== null && <span> ({count})</span>}
-          </Tag>
-        );
-      }
-
       return (
-        <Tag
-          onMouseDown={onPreventMouseDown}
+        <FacetTag
+          value={value}
+          clickableConfig={clickableConfig}
           closable={closable}
           onClose={onClose}
-          style={{ marginRight: 3 }}
-        >
-          {value}
-          {count !== null && <span> ({count})</span>}
-        </Tag>
+          onMouseDown={onPreventMouseDown}
+          count={count}
+        />
       );
     };
   };

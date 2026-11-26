@@ -84,6 +84,7 @@ import {
   stringifyApiRequest,
 } from '../../common/STAC';
 import DownloadModal from '../Downloads/DownloadModal';
+import FacetTag from '../DataDisplay/FacetTag';
 
 const tooltipText = {
   featureNotAvailableInStac: 'This feature is not compatible with STAC projects.',
@@ -1240,6 +1241,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
                 activeFacets[facet].map((variable: string) => {
                   const facetKey = `${facet}:${variable}`;
                   const isProblematic = problematicFacets.has(facetKey);
+                  const clickableConfig = currentProject.clickableFacets?.[facet];
                   return (
                     <div key={variable} data-testid={variable}>
                       {isProblematic ? (
@@ -1248,20 +1250,20 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
                           placement="top"
                         >
                           <span>
-                            <Tag
-                              value={[facet, variable]}
-                              onClose={handleRemoveFilter}
-                              type="facet"
+                            <FacetTag
+                              value={variable}
+                              clickableConfig={clickableConfig}
+                              onClose={() => handleRemoveFilter([facet, variable], 'facet')}
                               color="warning"
-                            >
-                              {variable}
-                            </Tag>
+                            />
                           </span>
                         </Tooltip>
                       ) : (
-                        <Tag value={[facet, variable]} onClose={handleRemoveFilter} type="facet">
-                          {variable}
-                        </Tag>
+                        <FacetTag
+                          value={variable}
+                          clickableConfig={clickableConfig}
+                          onClose={() => handleRemoveFilter([facet, variable], 'facet')}
+                        />
                       )}
                     </div>
                   );
